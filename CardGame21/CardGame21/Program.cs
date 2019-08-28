@@ -17,7 +17,6 @@ namespace CardGame21
         Nine = 9,
         Ten = 10,
         Ace = 11
-
     }
     enum CardSuit
     {
@@ -28,111 +27,103 @@ namespace CardGame21
     }
     struct Computer
     {
-        public int PlayComputer(Card[] cards, Random rmd, int pointPlayer)
+        private int cardsOnHandComputer;
+        private bool twoAces;
+        public int ReturnCardsOnHand()
         {
-            Card[] cardsComputer = new Card[6];
-            int indexCardsComputer = 0;
-            int points = 0;
-            bool continueGivCard = true;
-            int counterAces = 0;
-
-            do
+            return cardsOnHandComputer;
+        }
+        public bool TwoAces()
+        {
+            return twoAces;
+        }
+        public int PlayComputer(Card[] cards, int pointPlayer, int cardsOnHandPlayer)
+        {
+            int points = cards[cardsOnHandPlayer].CardValue + cards[cardsOnHandPlayer + 1].CardValue;
+            cardsOnHandComputer = 2;
+            twoAces = false;
+            int indexCards = cardsOnHandPlayer + 2;
+            bool giveCard = true;
+            if (points == 22 && cardsOnHandComputer == 2)
             {
-                if (cardsComputer[indexCardsComputer].CardValue == 11)
+                Console.WriteLine("Computer has two Aces!He won!");
+                twoAces = true;
+            }
+            else
+            {
+                do
                 {
-                    counterAces++;
-                    if (counterAces > 1)
+                    if (pointPlayer > 21)
                     {
-                        Console.WriteLine("You win!");
-                        points = 21;
                         break;
                     }
-                }
-                cardsComputer[indexCardsComputer] = cards[rmd.Next(0, cards.Length)];
-                points += cardsComputer[indexCardsComputer].CardValue;
-
-                indexCardsComputer++;
-
-                if (pointPlayer > 21)
-                {
-                    Console.WriteLine($"Computer have: {points} points");
-                    continueGivCard = false;
-                }
-
-                if (indexCardsComputer > 1 && points > 15)
-                {
-                    Console.WriteLine($"Computer have: {points} points");
-                    Console.WriteLine();
-                    continueGivCard = false;
-                }
-
-            } while (continueGivCard);
-
+                    else if (points <= 15)
+                    {
+                        points += cards[indexCards].CardValue;
+                        cardsOnHandComputer++;
+                    }
+                    else
+                    {
+                        giveCard = false;
+                    }
+                } while (giveCard);
+                Console.WriteLine($"Computer have: {points} points\n");
+            }
             return points;
         }
     }
     struct Pleyer
     {
-        public int Play(Card[] cards, Random rmd)
+        private int cardsOnHandPlayer;
+        private bool twoAces;
+        public int ReturnCardsOnHand()
         {
-            Card[] cardsInHand = new Card[6];
+            return cardsOnHandPlayer;
+        }
+        public bool TwoAces()
+        {
+            return twoAces;
+        }
+        public int Play(Card[] cards, int cardsOnHandComputer)
+        {
+            Console.WriteLine($"You have fallen: \n\t\t{cards[cardsOnHandComputer].Name} - {cards[cardsOnHandComputer].Suit}," +
+                                                           $"\n\t\t{cards[cardsOnHandComputer + 1].Name} - {cards[cardsOnHandComputer + 1].Suit}\n");
 
-            bool continueGiveCard = true;
-            int points = 0;
-            int indexCardInHand = 0;
-            int counterAces = 0;
-
-            Console.Write("Your card: ");
-            do
+            int points = cards[cardsOnHandComputer].CardValue + cards[cardsOnHandComputer + 1].CardValue;
+            twoAces = false;
+            cardsOnHandPlayer = 2;
+            int indexCards = cardsOnHandComputer + 2;
+            if (points == 22 && cardsOnHandPlayer == 2)
             {
-                if (cardsInHand[indexCardInHand].CardValue == 11)
+                Console.WriteLine("You have two Aces!You win!");
+                twoAces = true;
+            }
+            else
+            {
+                ConsoleKey keyToContinue;
+                do
                 {
-                    counterAces++;
-                    if (counterAces > 1)
-                    {
-                        Console.WriteLine("You win!");
-                        points = 21;
-                        break;
-                    }
-                }
-
-                cardsInHand[indexCardInHand] = cards[rmd.Next(0, cards.Length)];
-                points += cardsInHand[indexCardInHand].CardValue;
-
-                Console.Write($"{ cardsInHand[indexCardInHand].Name},{ cardsInHand[indexCardInHand].Suit} ");
-                indexCardInHand++;
-
-
-                if (indexCardInHand > 1)
-                {
-                    Console.WriteLine($"\nYou have: {points} piints");
-                    Console.WriteLine("Do you whont continue?\n\tPres Y (yes) / N (No)");
-
-                    ConsoleKey keyToContinue;
-                    bool keyForGivCard = true;
-
+                    Console.WriteLine($"This is: \t{points} points");
+                    Console.WriteLine("\nDo you want another card?\n\tPress Y (yes) / N (No)");
                     do
                     {
                         keyToContinue = Console.ReadKey().Key;
                         if (keyToContinue != ConsoleKey.Y && keyToContinue != ConsoleKey.N)
                         {
                             Console.WriteLine("\nYou entered an unknown letter!Try Again!");
-                            keyForGivCard = true;
                         }
                         else if (keyToContinue == ConsoleKey.Y)
                         {
-                            keyForGivCard = false;
+                            points += cards[indexCards].CardValue;
+                            Console.WriteLine($"\nYou have fallen: { cards[indexCards].Name} - { cards[indexCards].Suit}");
+                            cardsOnHandPlayer++;
+                            indexCards++;
+                            break;
                         }
-                        else if (keyToContinue == ConsoleKey.N)
-                        {
-                            continueGiveCard = false;
-                            keyForGivCard = false;
-                        }
-                    } while (keyForGivCard);
+                    } while (keyToContinue != ConsoleKey.N);
                     Console.WriteLine();
-                }
-            } while (continueGiveCard);
-
+                } while (keyToContinue != ConsoleKey.N);
+            }
             return points;
         }
     }
@@ -141,17 +132,62 @@ namespace CardGame21
         public string Name;
         public int CardValue;
         public string Suit;
+        public static Card[] CriateDesk()
+        {
+            Card[] cards = new Card[36];
+            int index = 0;
+            for (int i = 0; i < 4; i++)
+            {
+                string cardSuit = ((CardSuit)i).ToString();
+                for (int j = 2; j <= 11; j++)
+                {
+                    if (j == 5)
+                    {
+                        continue;
+                    }
+                    string cardName = ((CardName)j).ToString();
+                    int cardValue = (int)((CardName)j);
+                    cards[index].Suit = cardSuit;
+                    cards[index].Name = cardName;
+                    cards[index].CardValue = cardValue;
+                    index++;
+                }
+            }
+            return cards;
+        }
+        public static Card[] ShuffleCards(Card[] cards, Random rmd)
+        {
+            for (int i = 0; i < 100; i++)
+            {
+                int indexFirstCard = rmd.Next(0, cards.Length);
+                int indexSecondCard = rmd.Next(0, cards.Length);
+                Card tmp = cards[indexFirstCard];
+                cards[indexFirstCard] = cards[indexSecondCard];
+                cards[indexSecondCard] = tmp;
+            }
+            return cards;
+        }
     }
     class Program
     {
-        public static bool WhooWins(int player, int computer)
+        public static bool WhooWins(int player, int computer, bool acesPlayer, bool acesComputer)
         {
             bool rez = true;
-            if (player <= 21 & computer <= 21)
+            if (acesPlayer)
+            {
+                Console.WriteLine("Player Win!");
+                rez = true;
+            }
+            else if (acesComputer)
+            {
+                Console.WriteLine("Computer Win!");
+                rez = false;
+            }
+            else if (player <= 21 & computer <= 21 & player != 0 & computer != 0)
             {
                 if (player > computer)
                 {
-                    Console.WriteLine("Playaer Win!");
+                    Console.WriteLine("Player Win!");
                     rez = true;
                 }
                 else if (player < computer)
@@ -165,11 +201,11 @@ namespace CardGame21
                     rez = true;
                 }
             }
-            else if (player > 21 & computer > 21)
+            else if (player > 21 & computer > 21 & player != 0 & computer != 0)
             {
                 if (player < computer)
                 {
-                    Console.WriteLine("Playaer Win!");
+                    Console.WriteLine("Player Win!");
                     rez = true;
                 }
                 else if (player > computer)
@@ -183,7 +219,7 @@ namespace CardGame21
                     rez = true;
                 }
             }
-            else if (player <= 21 & computer > 21)
+            else if (player <= 21 & computer > 21 & player != 0 & computer != 0)
             {
                 Console.WriteLine("Player Win!");
                 rez = true;
@@ -192,51 +228,24 @@ namespace CardGame21
             {
                 Console.WriteLine("Computer Win!");
                 rez = false;
-
             }
-
             return rez;
         }
         static void Main(string[] args)
         {
-            Card[] cards = new Card[36];            //creating a deck of cards
-            int index = 0;
-
-            for (int i = 0; i < 4; i++)
-            {
-                string cardSuit = ((CardSuit)i).ToString();
-
-                for (int j = 2; j <= 11; j++)
-                {
-                    if (j == 5)
-                    {
-                        continue;
-                    }
-                    string cardName = ((CardName)j).ToString();
-                    int cardValue = (int)((CardName)j);
-
-                    cards[index].Suit = cardSuit;
-                    cards[index].Name = cardName;
-                    cards[index].CardValue = cardValue;
-                    index++;
-                }
-            }
-
-            bool repeatGame = true;
+            Card[] cards = Card.CriateDesk();
+            ConsoleKey keyForContnueGame;
             int winsPlayer = 0;
             int winsComputer = 0;
-
             do
             {
-                Console.WriteLine("Hi! Velcome to Siml card game \"21\"! \nLet's determine who will start:\nClick E(for Eagle) or T(for Tails)!");
+                Console.WriteLine("Hi! Velcome to Simlple card game \"21\"! \nLet's determine who will start:\nClick E(for Eagle) or T(for Tails)!");
 
-                bool again = true;                         //input validation    
+                bool again = true;
                 ConsoleKey key;
-
                 do
                 {
                     key = Console.ReadKey().Key;
-
                     if (key != ConsoleKey.E && key != ConsoleKey.T)
                     {
                         Console.WriteLine("You entered an unknown letter!Try Again!");
@@ -246,75 +255,93 @@ namespace CardGame21
                     {
                         again = false;
                     }
-
                 } while (again);
                 Console.WriteLine();
 
+                Random rmd = new Random();
                 bool whoStarts = true;
-                Random rmd = new Random();                             //determining who will start the game
                 int num = rmd.Next(1, 35);
                 if (num % 2 == 0)
                 {
                     Console.WriteLine("Tails fell out!");
-
                     if (key == ConsoleKey.T)
                     {
-                        Console.WriteLine("You began!\n\tPress any key to continue.....");
-
+                        Console.WriteLine("You starts!\n\tPress any key to continue.....");
                     }
                     else
                     {
-                        Console.WriteLine("Computer Begain!\nPress any key to continue.....");
+                        Console.WriteLine("Computer starts!\n\tPress any key to continue.....");
                         whoStarts = false;
                     }
                 }
                 else
                 {
                     Console.WriteLine("Eagle fell out!");
-
                     if (key == ConsoleKey.E)
                     {
-                        Console.WriteLine("You began!\nPress any key to continue.....");
+                        Console.WriteLine("You starts!\n\tPress any key to continue.....");
                     }
                     else
                     {
-                        Console.WriteLine("Computer Begain!\nPress any key to continue.....");
+                        Console.WriteLine("Computer starts!\n\tPress any key to continue.....");
                         whoStarts = false;
                     }
                 }
                 Console.ReadKey();
                 Console.Clear();
 
-
-
+                Card[] ShuffledDeck = Card.ShuffleCards(cards, rmd);
                 Pleyer pleyer = new Pleyer();
                 Computer computer = new Computer();
-
-                int pointsPleyerStartFirst = 0;
-                int pointsComputerStartFirst = 0;
-                int pointsComputerStartSecond = 0;
-                int pointsPleyerStartSecond = 0;
-                bool forWins = true;
-
-
-                switch (whoStarts)
+                bool forWins = false;
+                if (whoStarts)
                 {
-                    case true:
-                        pointsPleyerStartFirst = pleyer.Play(cards, rmd);
-                        pointsComputerStartFirst = computer.PlayComputer(cards, rmd, pointsComputerStartFirst);
-
-                        forWins = WhooWins(pointsPleyerStartFirst, pointsComputerStartFirst);
-                        break;
-                    case false:
-                        pointsComputerStartSecond = computer.PlayComputer(cards, rmd, pointsComputerStartSecond);
-                        pointsPleyerStartSecond = pleyer.Play(cards, rmd);
-
-                        WhooWins(pointsPleyerStartSecond, pointsComputerStartSecond);
-                        break;
+                    int pointsPleyerFirst = pleyer.Play(ShuffledDeck, 0);
+                    int cardsPlayer = pleyer.ReturnCardsOnHand();
+                    bool twoAcesPlayer = pleyer.TwoAces();
+                    bool twoAcesComputer = false;
+                    if (twoAcesPlayer)
+                    {
+                        forWins = WhooWins(0, 0, twoAcesPlayer, twoAcesComputer);
+                    }
+                    else
+                    {
+                        int pointsComputerFirst = computer.PlayComputer(ShuffledDeck, pointsPleyerFirst, cardsPlayer);
+                        twoAcesComputer = computer.TwoAces();
+                        if (twoAcesComputer)
+                        {
+                            forWins = WhooWins(0, 0, twoAcesPlayer, twoAcesComputer);
+                        }
+                        else
+                        {
+                            forWins = WhooWins(pointsPleyerFirst, pointsComputerFirst, twoAcesPlayer, twoAcesComputer);
+                        }
+                    }
                 }
-
-
-
+                else
+                {
+                    int pointsComputerSecond = computer.PlayComputer(ShuffledDeck, 0, 0);
+                    int cardsComputer = computer.ReturnCardsOnHand();
+                    bool twoAcesComputer = computer.TwoAces();
+                    bool twoAcesPlayer = false;
+                    if (twoAcesComputer)
+                    {
+                        forWins = WhooWins(0, 0, twoAcesPlayer, twoAcesComputer);
+                    }
+                    else
+                    {
+                        int pointsPleyerSecond = pleyer.Play(ShuffledDeck, cardsComputer);
+                        twoAcesPlayer = pleyer.TwoAces();
+                        if (twoAcesPlayer)
+                        {
+                            forWins = WhooWins(0, 0, twoAcesPlayer, twoAcesComputer);
+                        }
+                        else
+                        {
+                            forWins = WhooWins(pointsPleyerSecond, pointsComputerSecond, twoAcesPlayer, twoAcesComputer);
+                        }
+                    }
+                }
                 if (forWins)
                 {
                     winsPlayer++;
@@ -324,39 +351,24 @@ namespace CardGame21
                     winsComputer++;
                 }
 
-                Console.WriteLine("\nDo you want to start new game?\n\tPres Y(yes)/N(no) ");
-
-                bool repeatInput = true;
-
-                ConsoleKey keyForContnueGame;
-
+                Console.WriteLine("\nDo you want to start new game?\n\tPress Y(yes)/N(no) ");
                 do
                 {
                     keyForContnueGame = Console.ReadKey().Key;
-
                     if (keyForContnueGame != ConsoleKey.Y && keyForContnueGame != ConsoleKey.N)
                     {
                         Console.WriteLine("You entered an unknown letter!Try Again!");
-                        repeatInput = true;
                     }
                     else if (keyForContnueGame == ConsoleKey.Y)
                     {
-                        repeatInput = false;
+                        break;
                     }
-                    else if (keyForContnueGame == ConsoleKey.N)
-                    {
-                        repeatInput = false;
-                        repeatGame = false;
-                    }
-
-                } while (repeatInput);
-
+                } while (keyForContnueGame != ConsoleKey.N);
                 Console.Clear();
+            } while (keyForContnueGame != ConsoleKey.N);
 
-            } while (repeatGame);
-
-            Console.WriteLine($"Game is completed!\n\tYou win: {winsPlayer} times\n\tComputer win: {winsComputer} times\n" +
-                $"Thanks for playing my game!Have a nice day!");
+            Console.WriteLine($"Game is completed!\n\nYou win: \t{winsPlayer} times\n\nComputer win: \t{winsComputer} times\n" +
+                $"\nThanks for playing my game!Have a nice Day!");
 
             Console.ReadLine();
         }
