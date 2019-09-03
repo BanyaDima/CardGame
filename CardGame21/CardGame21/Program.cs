@@ -18,6 +18,7 @@ namespace CardGame21
         Ten = 10,
         Ace = 11
     }
+
     enum CardSuit
     {
         Clubs,
@@ -25,6 +26,7 @@ namespace CardGame21
         Hearts,
         Spades
     }
+
     struct Computer
     {
         private int cardsOnHandComputer;
@@ -72,7 +74,8 @@ namespace CardGame21
             return points;
         }
     }
-    struct Pleyer
+
+    struct Player
     {
         private int cardsOnHandPlayer;
         private bool twoAces;
@@ -127,26 +130,27 @@ namespace CardGame21
             return points;
         }
     }
+
     struct Card
     {
-        public string Name;
+        public CardName Name;
         public int CardValue;
-        public string Suit;
-        public static Card[] CriateDesk()
+        public CardSuit Suit;
+        public static Card[] CreateDesk()
         {
             Card[] cards = new Card[36];
             int index = 0;
             for (int i = 0; i < 4; i++)
             {
-                string cardSuit = ((CardSuit)i).ToString();
+                CardSuit cardSuit = (CardSuit)i;
                 for (int j = 2; j <= 11; j++)
                 {
                     if (j == 5)
                     {
                         continue;
                     }
-                    string cardName = ((CardName)j).ToString();
-                    int cardValue = (int)((CardName)j);
+                    CardName cardName = (CardName)j;
+                    int cardValue = (int)(CardName)j;
                     cards[index].Suit = cardSuit;
                     cards[index].Name = cardName;
                     cards[index].CardValue = cardValue;
@@ -155,6 +159,7 @@ namespace CardGame21
             }
             return cards;
         }
+
         public static Card[] ShuffleCards(Card[] cards, Random rmd)
         {
             for (int i = 0; i < 100; i++)
@@ -168,9 +173,10 @@ namespace CardGame21
             return cards;
         }
     }
+
     class Program
     {
-        public static bool WhooWins(int player, int computer, bool acesPlayer, bool acesComputer)
+        public static bool AceWinner(bool acesPlayer, bool acesComputer)
         {
             bool rez = true;
             if (acesPlayer)
@@ -183,57 +189,46 @@ namespace CardGame21
                 Console.WriteLine("Computer Win!");
                 rez = false;
             }
-            else if (player <= 21 & computer <= 21 & player != 0 & computer != 0)
+            return rez;
+        }
+
+        public static bool PointsWinner(int player, int computer)
+        {
+            bool rez = true;
+            if (player < computer & computer <= 21 || player > 21)
             {
-                if (player > computer)
-                {
-                    Console.WriteLine("Player Win!");
-                    rez = true;
-                }
-                else if (player < computer)
-                {
-                    Console.WriteLine("Computer Win!");
-                    rez = false;
-                }
-                else
-                {
-                    Console.WriteLine("The score is equal, but according to the rules the player wins! :)");
-                    rez = true;
-                }
+                Console.WriteLine("Computer Win!");
+                rez = false;
             }
-            else if (player > 21 & computer > 21 & player != 0 & computer != 0)
+            else if (computer < player & player <= 21 || computer > 21)
+            {
+                Console.WriteLine("Player Win!");
+                rez = true;
+            }
+            else if (player > 21 & computer > 21)
             {
                 if (player < computer)
                 {
                     Console.WriteLine("Player Win!");
                     rez = true;
                 }
-                else if (player > computer)
+                else
                 {
                     Console.WriteLine("Computer Win!");
                     rez = false;
                 }
-                else
-                {
-                    Console.WriteLine("The score is equal, but according to the rules the player wins! :)");
-                    rez = true;
-                }
             }
-            else if (player <= 21 & computer > 21 & player != 0 & computer != 0)
-            {
-                Console.WriteLine("Player Win!");
-                rez = true;
-            }
-            else if (player > 21 & computer <= 21)
+            else if (player == computer)
             {
                 Console.WriteLine("Computer Win!");
                 rez = false;
             }
             return rez;
         }
+
         static void Main(string[] args)
         {
-            Card[] cards = Card.CriateDesk();
+            Card[] cards = Card.CreateDesk();
             ConsoleKey keyForContnueGame;
             int winsPlayer = 0;
             int winsComputer = 0;
@@ -291,9 +286,9 @@ namespace CardGame21
                 Console.Clear();
 
                 Card[] ShuffledDeck = Card.ShuffleCards(cards, rmd);
-                Pleyer pleyer = new Pleyer();
+                Player pleyer = new Player();
                 Computer computer = new Computer();
-                bool forWins = false;
+                bool winner = false;
                 if (whoStarts)
                 {
                     int pointsPleyerFirst = pleyer.Play(ShuffledDeck, 0);
@@ -302,7 +297,7 @@ namespace CardGame21
                     bool twoAcesComputer = false;
                     if (twoAcesPlayer)
                     {
-                        forWins = WhooWins(0, 0, twoAcesPlayer, twoAcesComputer);
+                        winner = AceWinner(twoAcesPlayer, twoAcesComputer);
                     }
                     else
                     {
@@ -310,11 +305,11 @@ namespace CardGame21
                         twoAcesComputer = computer.TwoAces();
                         if (twoAcesComputer)
                         {
-                            forWins = WhooWins(0, 0, twoAcesPlayer, twoAcesComputer);
+                            winner = AceWinner(twoAcesPlayer, twoAcesComputer);
                         }
                         else
                         {
-                            forWins = WhooWins(pointsPleyerFirst, pointsComputerFirst, twoAcesPlayer, twoAcesComputer);
+                            winner = PointsWinner(pointsPleyerFirst, pointsComputerFirst);
                         }
                     }
                 }
@@ -326,7 +321,7 @@ namespace CardGame21
                     bool twoAcesPlayer = false;
                     if (twoAcesComputer)
                     {
-                        forWins = WhooWins(0, 0, twoAcesPlayer, twoAcesComputer);
+                        winner = AceWinner(twoAcesPlayer, twoAcesComputer);
                     }
                     else
                     {
@@ -334,15 +329,16 @@ namespace CardGame21
                         twoAcesPlayer = pleyer.TwoAces();
                         if (twoAcesPlayer)
                         {
-                            forWins = WhooWins(0, 0, twoAcesPlayer, twoAcesComputer);
+                            winner = AceWinner(twoAcesPlayer, twoAcesComputer);
                         }
                         else
                         {
-                            forWins = WhooWins(pointsPleyerSecond, pointsComputerSecond, twoAcesPlayer, twoAcesComputer);
+                            winner = PointsWinner(pointsPleyerSecond, pointsComputerSecond);
                         }
                     }
                 }
-                if (forWins)
+
+                if (winner)
                 {
                     winsPlayer++;
                 }
