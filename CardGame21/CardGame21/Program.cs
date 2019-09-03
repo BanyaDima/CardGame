@@ -254,7 +254,7 @@ namespace CardGame21
                 Console.WriteLine();
 
                 Random rmd = new Random();
-                bool whoStarts = true;
+                bool playerStarts = true;
                 int num = rmd.Next(1, 35);
                 if (num % 2 == 0)
                 {
@@ -266,7 +266,7 @@ namespace CardGame21
                     else
                     {
                         Console.WriteLine("Computer starts!\n\tPress any key to continue.....");
-                        whoStarts = false;
+                        playerStarts = false;
                     }
                 }
                 else
@@ -279,7 +279,7 @@ namespace CardGame21
                     else
                     {
                         Console.WriteLine("Computer starts!\n\tPress any key to continue.....");
-                        whoStarts = false;
+                        playerStarts = false;
                     }
                 }
                 Console.ReadKey();
@@ -288,8 +288,8 @@ namespace CardGame21
                 Card[] ShuffledDeck = Card.ShuffleCards(cards, rmd);
                 Player pleyer = new Player();
                 Computer computer = new Computer();
-                bool winner = false;
-                if (whoStarts)
+                bool playerWins = false;
+                if (playerStarts)
                 {
                     int pointsPleyerFirst = pleyer.Play(ShuffledDeck, 0);
                     int cardsPlayer = pleyer.ReturnCardsOnHand();
@@ -297,7 +297,7 @@ namespace CardGame21
                     bool twoAcesComputer = false;
                     if (twoAcesPlayer)
                     {
-                        winner = AceWinner(twoAcesPlayer, twoAcesComputer);
+                        playerWins = AceWinner(twoAcesPlayer, twoAcesComputer);
                     }
                     else
                     {
@@ -305,11 +305,11 @@ namespace CardGame21
                         twoAcesComputer = computer.TwoAces();
                         if (twoAcesComputer)
                         {
-                            winner = AceWinner(twoAcesPlayer, twoAcesComputer);
+                            playerWins = AceWinner(twoAcesPlayer, twoAcesComputer);
                         }
                         else
                         {
-                            winner = PointsWinner(pointsPleyerFirst, pointsComputerFirst);
+                            playerWins = PointsWinner(pointsPleyerFirst, pointsComputerFirst);
                         }
                     }
                 }
@@ -321,7 +321,7 @@ namespace CardGame21
                     bool twoAcesPlayer = false;
                     if (twoAcesComputer)
                     {
-                        winner = AceWinner(twoAcesPlayer, twoAcesComputer);
+                        playerWins = AceWinner(twoAcesPlayer, twoAcesComputer);
                     }
                     else
                     {
@@ -329,16 +329,16 @@ namespace CardGame21
                         twoAcesPlayer = pleyer.TwoAces();
                         if (twoAcesPlayer)
                         {
-                            winner = AceWinner(twoAcesPlayer, twoAcesComputer);
+                            playerWins = AceWinner(twoAcesPlayer, twoAcesComputer);
                         }
                         else
                         {
-                            winner = PointsWinner(pointsPleyerSecond, pointsComputerSecond);
+                            playerWins = PointsWinner(pointsPleyerSecond, pointsComputerSecond);
                         }
                     }
                 }
 
-                if (winner)
+                if (playerWins)
                 {
                     winsPlayer++;
                 }
